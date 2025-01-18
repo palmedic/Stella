@@ -127,25 +127,53 @@ def display_text_on_screen(text):
         y_position += 30  # Move to the next line (adjust spacing as needed)
     
 def display_image_on_screen(image_url):
-    """Download and display an image on the UniHiker screen."""
-    gui.clear()
-    response = requests.get(image_url)
-    with open(IMAGE_PATH, "wb") as file:
-        file.write(response.content)
+    """
+    Download an image, resize it, save the resized version, and display it on the UniHiker screen.
 
-    img = Image.open(IMAGE_PATH)
-    img = img.resize((SCREEN_WIDTH, SCREEN_HEIGHT))
-    img.show()
-    
-    img_image2 = gui.draw_image(x=0, y=0, w=SCREEN_WIDTH, h=SCREEN_HEIGHT, image=IMAGE_PATH)
-    print("Image displayed on the screen.")
+    Args:
+        image_url (str): The URL of the image to download.
+        save_path (str): The file path where the resized image will be saved.
+    """
+    gui.clear()
+    try:
+        # Download the image
+        response = requests.get(image_url)
+        response.raise_for_status()  # Check for HTTP request errors
+
+        # Save the original image temporarily
+        original_path = IMAGE_PATH
+        with open(original_path, "wb") as file:
+            file.write(response.content)
+
+        # Open and resize the image
+        img = Image.open(original_path)
+        img = img.resize((SCREEN_WIDTH, SCREEN_HEIGHT))  # Resize to screen dimensions
+        
+        # Save the resized image
+        img.save(original_path)
+        print(f"Resized image saved at: {original_path}")
+        
+        # Display the resized image on the screen
+        img_image2 = gui.draw_image(x=0, y=0, w=SCREEN_WIDTH, h=SCREEN_HEIGHT, image=original_path)
+        print("Image displayed on the screen.")
+    except Exception as e:
+        print(f"Error displaying image: {e}")
 
 def main():
     
     """Main function to run the AI assistant."""
     print("Welcome to your AI Assistant!")
     Board().begin() # Initialize the UNIHIKER
+    
     display_text_on_screen(WELCOME_MESSAGE);
+    
+    emj_astronaut = gui.draw_emoji(
+    x=((240 - 100) // 2) + 6,  # Center the emoji horizontally
+    y=((320 - 100) // 2) + 40,  # Center the emoji vertically
+    w=100,               # Width of the emoji
+    h=100,               # Height of the emoji
+    emoji="Think",   # The astronaut emoji
+    )
     
     while True: 
         
